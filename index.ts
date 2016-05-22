@@ -4,6 +4,10 @@ declare function require(path: string): any;
 var log = require('loglevel');
 var fs = require('fs');
 var path = require('path');
+var wrench = require('wrench');
+
+//probably the most bloated dependency in terms of its own requirements
+var Userid = require('userid');
 
 export function needed(assertion: boolean, errorCat: string, detail: string) {
     if (!assertion) {
@@ -27,10 +31,11 @@ enum DirectoryAssertions {
 }
 
 export class ReadableDirectory {
+    public abspath: string;
     public constructor(public spath: string) {
         needed(noErr(() => { fs.accessSync(spath, fs.R_OK); }),
             'Readable Directory', spath);
-
+        this.abspath = path.resolve(spath);
     }
     public getReadableSubdir(name: string): ReadableDirectory {
         return new ReadableDirectory(this.spath + '/' + name);
@@ -71,9 +76,19 @@ export class WritableDirectory extends ReadableDirectory {
     }
 
     public replaceContents(srcDir: ReadableDirectory): WritableDirectory {
+        wrench.copyDirSyncRecursive(srcDir.abspath, this.abspath, { forceDelete: true, preserveFiles: false });
         return this;
     }
     public mergeContents(srcDir: ReadableDirectory): WritableDirectory {
+        wrench.copyDirSyncRecursive(srcDir.abspath, this.abspath, { forceDelete: false, preserveFiles: false });
+        return this;
+    }
+    public chownSyncRecursive(username: string, groupname: string): WritableDirectory {
+        wrench.chownSyncRecursive(this.abspath, Userid.uid(username), Userid.gid(username));
+        return this;
+    }
+    public chmodSyncRecursive(newPerm: number): WritableDirectory {
+        wrench.chmodSyncRecursive(this.abspath, newPerm);
         return this;
     }
     public getWritableSubdir(name: string, requirements: DirectoryAssertions): WritableDirectory {
