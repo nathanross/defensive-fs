@@ -54,7 +54,7 @@ export class ReadableFile {
         needed(fs.lstatSync(spath).isFile(), 'Readable File', spath);
         this.abspath = path.resolve(spath);
     }
-    public read(): String {
+    public read(): string {
         return fs.readFileSync(this.abspath, { encoding: 'utf8' });
     }
 }
