@@ -24,7 +24,7 @@ export function noErr(shouldntFail: () => any) {
     }
 }
 
-enum DirectoryAssertions {
+export enum DirectoryAssertions {
     ASSERT_EXISTS = 1,
     ASSERT_PARENTS_EXIST = 2,
     ASSERT_NONE = 3
