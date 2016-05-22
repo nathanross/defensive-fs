@@ -43,12 +43,14 @@ export class ReadableDirectory {
 }
 
 export class ReadableFile {
+    public abspath: string;
     public constructor(public spath: string) {
         needed(noErr(() => { fs.accessSync(spath, fs.R_OK); }),
             'Readable Directory', spath);
+        this.abspath = path.resolve(spath);
     }
 }
-
+/*
 export class ReplacableFile extends ReadableFile {
     public constructor(public spath: string) {
         super(spath);
@@ -56,21 +58,22 @@ export class ReplacableFile extends ReadableFile {
             'ReplacableFile', spath);
     }
 }
-
+*/
 export class WritableDirectory extends ReadableDirectory {
     constructor(public spath: string, requirements: DirectoryAssertions) {
         super(WritableDirectory.createAsAble(path, requirements));
     }
     private static createAsAble(spath: string, requirements: DirectoryAssertions): string {
-        let exists = noErr(() => { fs.accessSync(spath); });
-        needed(exists || requirements != DirectoryAssertions.ASSERT_EXISTS, 'WritableDirectory', spath);
+        let abspath = path.resolve(spath);
+        let exists = noErr(() => { fs.accessSync(abspath); });
+        needed(exists || requirements != DirectoryAssertions.ASSERT_EXISTS, 'WritableDirectory', abspath);
         if (!exists) {
-            let parentsExist = noErr(() => { fs.accessSync(path.dirname(spath)); });
-            needed(parentsExist || requirements != DirectoryAssertions.ASSERT_PARENTS_EXIST, 'WritableDirectory', spath);
+            let parentsExist = noErr(() => { fs.accessSync(path.dirname(abspath)); });
+            needed(parentsExist || requirements != DirectoryAssertions.ASSERT_PARENTS_EXIST, 'WritableDirectory', abspath);
             if (!parentsExist) {
-                new WritableDirectory(path.dirname(spath), requirements);
+                new WritableDirectory(path.dirname(abspath), requirements);
             }
-            fs.mkdirSync()
+            fs.mkdirSync(abspath);
         }
         return spath;
     }
@@ -90,6 +93,34 @@ export class WritableDirectory extends ReadableDirectory {
     public chmodSyncRecursive(newPerm: number): WritableDirectory {
         wrench.chmodSyncRecursive(this.abspath, newPerm);
         return this;
+    }
+    public emptyRecursive(): WritableDirectory {
+        wrench.rmdirSyncRecursive(this.abspath, false);
+        fs.mkdirSync(this.abspath);
+        return this;
+    }
+    public ensureSymLink(pointedTo: string, pointedFrom: string): WritableDirectory {
+        let pointedToDest = path.resolve(this.abspath, pointedTo);
+        let dest = this.abspath + '/' + pointedFrom;
+        let exists = noErr(() => { fs.accessSync(dest); });
+        if (exists) {
+            fs.unlinkSync(dest);
+        }
+        fs.symlinkSync(pointedTo, dest);
+        return this;
+    }
+    public ensureCopyOf(source: ReadableFile, name: string): WritableDirectory {
+        let dest = this.abspath + '/' + name;
+        fs.createReadStream(source.abspath).pipe(fs.createWriteStream(dest));
+        return this;
+    }
+    public ensureTextfile(content: string, name: string) {
+        let dest = this.abspath + '/' + name;
+        let exists = noErr(() => { fs.accessSync(dest); });
+        if (exists && fs.lstatSync(dest).isSymbolicLink()) {
+            fs.unlinkSync(dest);
+        }
+        fs.writeFileSync(dest, content, { mode: 660 });
     }
     public getWritableSubdir(name: string, requirements: DirectoryAssertions): WritableDirectory {
         return new WritableDirectory(this.spath + '/' + name, requirements);

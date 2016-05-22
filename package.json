@@ -1,6 +1,6 @@
 {
   "name": "defensive-fs",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Typescript tool for defensive, oo-style fs read and write",
   "main": "index.js",
   "scripts": {
