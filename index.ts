@@ -35,10 +35,14 @@ export class ReadableDirectory {
     public constructor(public spath: string) {
         needed(noErr(() => { fs.accessSync(spath, fs.R_OK); }),
             'Readable Directory', spath);
+        needed(fs.lstatSync(spath).isDirectory(), 'Readable Directory', spath);
         this.abspath = path.resolve(spath);
     }
     public getReadableSubdir(name: string): ReadableDirectory {
         return new ReadableDirectory(this.spath + '/' + name);
+    }
+    public getReadableFile(name: string): ReadableFile {
+        return new ReadableFile(this.spath + '/' + name);
     }
 }
 
@@ -46,8 +50,12 @@ export class ReadableFile {
     public abspath: string;
     public constructor(public spath: string) {
         needed(noErr(() => { fs.accessSync(spath, fs.R_OK); }),
-            'Readable Directory', spath);
+            'Readable File', spath);
+        needed(fs.lstatSync(spath).isFile(), 'Readable File', spath);
         this.abspath = path.resolve(spath);
+    }
+    public read(): String {
+        return fs.readFileSync(this.abspath, { encoding: 'utf8' });
     }
 }
 /*
