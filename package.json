@@ -24,7 +24,6 @@
   "dependencies": {
     "loglevel": "^1.4.0",
     "typescript": "^1.8.10",
-    "userid": "^0.2.0",
     "wrench": "^1.5.9"
   }
 }

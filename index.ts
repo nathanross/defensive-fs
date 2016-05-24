@@ -6,8 +6,6 @@ var fs = require('fs');
 var path = require('path');
 var wrench = require('wrench');
 
-//probably the most bloated dependency in terms of its own requirements
-var Userid = require('userid');
 
 export function needed(assertion: boolean, errorCat: string, detail: string) {
     if (!assertion) {
@@ -94,8 +92,8 @@ export class WritableDirectory extends ReadableDirectory {
         wrench.copyDirSyncRecursive(srcDir.abspath, this.abspath, { forceDelete: false, preserveFiles: false });
         return this;
     }
-    public chownSyncRecursive(username: string, groupname: string): WritableDirectory {
-        wrench.chownSyncRecursive(this.abspath, Userid.uid(username), Userid.gid(username));
+    public chownSyncRecursive(uid: number, gid: number): WritableDirectory {
+        wrench.chownSyncRecursive(this.abspath, uid, gid);
         return this;
     }
     public chmodSyncRecursive(newPerm: number): WritableDirectory {
