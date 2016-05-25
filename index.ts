@@ -67,7 +67,7 @@ export class ReplacableFile extends ReadableFile {
 */
 export class WritableDirectory extends ReadableDirectory {
     constructor(public spath: string, requirements: DirectoryAssertions) {
-        super(WritableDirectory.createAsAble(path, requirements));
+        super(WritableDirectory.createAsAble(spath, requirements));
     }
     private static createAsAble(spath: string, requirements: DirectoryAssertions): string {
         let abspath = path.resolve(spath);
