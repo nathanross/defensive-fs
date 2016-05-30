@@ -128,6 +128,10 @@ export class WritableDirectory extends ReadableDirectory {
         }
         fs.writeFileSync(dest, content, { mode: 660 });
     }
+    public appendTextTo(content: string, name: string) {
+        let dest = this.abspath + '/' + name;
+        fs.writeFileSync(dest, content, { mode: 660, flags: 'a' });
+    }
     public getWritableSubdir(name: string, requirements: DirectoryAssertions): WritableDirectory {
         return new WritableDirectory(this.spath + '/' + name, requirements);
     }
